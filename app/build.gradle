@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
+
+    defaultConfig {
+        applicationId "com.udacity.gradle.builditbigger"
+        minSdkVersion 23
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "default"
+    productFlavors {
+        free {
+            dimension "default"
+            applicationIdSuffix ".free"
+        }
+        paid {
+            dimension "default"
+            applicationIdSuffix ".paid"
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    freeCompile 'com.google.android.gms:play-services-ads:11.6.0'
+
+    compile project(":jokeslib")
+    compile project(":androidjokeslib")
+    compile project(path: ':backend', configuration: 'android-endpoints')
+
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support.test.espresso:espresso-idling-resource:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.google.code.findbugs'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'design'
+        exclude group: 'com.android.support', module: 'recyclerview-v7'
+    }
+    androidTestCompile 'com.android.support.test:runner:1.0.1', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.google.code.findbugs'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'design'
+        exclude group: 'com.android.support', module: 'recyclerview-v7'
+    }
+    androidTestCompile 'com.android.support.test.espresso:espresso-contrib:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.google.code.findbugs'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'design'
+        exclude group: 'com.android.support', module: 'recyclerview-v7'
+    }
+}
+
+task runAppEngine(dependsOn: [":backend:appengineRun"]) {
+    project(":backend").afterEvaluate { backend ->
+        backend.extensions.appengine.daemon = true
+    }
+}
+
+task runGCMTest(dependsOn: ["runAppEngine", "connectedAndroidTest"])
+runGCMTest.mustRunAfter 'runAppEngine'
+
+task superTestTask (dependsOn: runGCMTest) {
+
+    group = 'Udacity'
+    description = 'Launches the GCE local development server (in Daemon mode, so it doesn\'t block further execution)\n' +
+            'Runs all tests\n' +
+            'Shuts the server down again'
+}
+
+superTestTask.finalizedBy ":backend:appengineStop"

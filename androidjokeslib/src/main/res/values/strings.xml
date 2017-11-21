@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">androidjokeslib</string>
+    <string name="error_missing_extras">Error, missing Activity parameters!</string>
+    <string name="close">close</string>
+</resources>
